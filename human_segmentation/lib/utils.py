@@ -1,8 +1,10 @@
-import numpy as np
+"""Utils for human segmentation project"""
+import numpy as np  # type: ignore
 
 
 def encode_rle(mask):
-    """Returns encoded mask (run length) as a string.
+    """
+    Returns encoded mask (run length) as a string.
 
     Parameters
     ----------
@@ -18,7 +20,6 @@ def encode_rle(mask):
     -----
     Mask should contains only 2 unique values, one of them must be 0, another value, that denotes
     object, could be different from 1 (for example 255).
-
     """
     pixels = mask.flatten()
     pixels = np.concatenate([[0], pixels, [0]])
@@ -29,7 +30,8 @@ def encode_rle(mask):
 
 
 def decode_rle(rle_mask, shape=(320, 240)):
-    """Decodes mask from rle string.
+    """
+    Decodes mask from rle string.
 
     Parameters
     ----------
@@ -42,7 +44,6 @@ def decode_rle(rle_mask, shape=(320, 240)):
     -------
     np.ndarray, 2d
         Mask that contains only 2 unique values: 0 - denotes background, 1 - denotes object.
-    
     """
     s = rle_mask.split()
     starts, lengths = [np.asarray(x, dtype=int) for x in (s[0:][::2], s[1:][::2])]
