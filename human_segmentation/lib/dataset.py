@@ -6,7 +6,10 @@ import torchvision  # type: ignore
 import pandas as pd  # type: ignore
 from PIL import Image  # type: ignore
 
-from lib import *  # type: ignore
+from lib.utils import *
+# from lib.dataset import *
+
+  # type: ignore
 
 
 class HumanSegmentationDatasetCSV(torch.utils.data.Dataset):
@@ -30,7 +33,7 @@ class HumanSegmentationDatasetCSV(torch.utils.data.Dataset):
 
         self.names = self.annotation['name'].values
         self.ids = self.annotation['id'].values.astype(int)
-        self.rle_masks = self.annotation['rle_mask'].values
+        self.mask_rles = self.annotation['mask_rle'].values
 
         self.width = config['width']
         self.height = config['height']
@@ -50,18 +53,6 @@ class HumanSegmentationDatasetCSV(torch.utils.data.Dataset):
                     (self.height, self.width),
                     interpolation=3
                 )
-            )
-            if self.color_jitter:
-                self.transform.append(
-                    torchvision.transforms.ColorJitter(
-                        brightness=0.1,
-                        contrast=0.1,
-                        saturation=0.1,
-                        hue=0
-                    )
-                )
-            self.transform.append(
-                torchvision.transforms.RandomHorizontalFlip()
             )
             self.transform.append(
                 torchvision.transforms.ToTensor()
@@ -90,6 +81,31 @@ class HumanSegmentationDatasetCSV(torch.utils.data.Dataset):
                 ]
             )
 
+        if self.transform_flag:
+            self.mask_transform = list()
+
+            self.mask_transform.append(
+                torchvision.transforms.Resize(
+                    (self.height, self.width),
+                    interpolation=3
+                )
+            )
+            self.mask_transform.append(
+                torchvision.transforms.ToTensor()
+            )
+            self.mask_transform = torchvision.transforms.Compose(self.mask_transform)
+
+        else:
+            self.mask_transform = torchvision.transforms.Compose(
+                [
+                    torchvision.transforms.Resize(
+                        (self.height, self.width),
+                        interpolation=3
+                    ),
+                    torchvision.transforms.ToTensor()
+                ]
+            )
+
     def __len__(self):
         return len(self.annotation)
 
@@ -99,9 +115,13 @@ class HumanSegmentationDatasetCSV(torch.utils.data.Dataset):
         name = os.path.join(self.prefix, name)
 
         image = Image.open(name)
+        #print(image.size)
         image = self.transform(image)
 
-        mask = decode_rle(self.rle_masks[idx])
+        mask = decode_rle(self.mask_rles[idx])
+        mask = Image.fromarray(mask)
+        #print(mask.size)
+        mask = self.mask_transform(mask)
 
         sample = (image, mask)
 

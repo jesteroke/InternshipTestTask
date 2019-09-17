@@ -1,7 +1,8 @@
 """Human segmentation loss classes"""
 import torch  # type: ignore
 
-from lib import *  # type: ignore
+from lib.metrics import *
+ # type: ignore
 
 
 class HumanSegmentationLossDice(torch.nn.modules.loss._Loss):

@@ -1,7 +1,10 @@
 """Human segmentation models"""
 import torch  # type: ignore
 
-from lib import *  # type: ignore
+# from lib import *  # type: ignore
+
+from lib.unet import *
+
 
 
 class HumanSegmentationModelUNet(torch.nn.Module):

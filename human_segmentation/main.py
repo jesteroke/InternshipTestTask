@@ -2,7 +2,7 @@
 import argparse
 import json
 
-from lib import *  # type: ignore
+from lib.trainer import Trainer  # type: ignore
 
 
 def parse_args():

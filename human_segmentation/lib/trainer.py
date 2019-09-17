@@ -7,7 +7,10 @@ import pandas as pd  # type: ignore
 import torch  # type: ignore
 from tqdm import tqdm as tqdm  # type: ignore
 
-from lib import *  # type: ignore
+from lib.dataset import *
+from lib.model import *
+from lib.loss import *
+# type: ignore
 
 
 class Trainer:
@@ -36,7 +39,7 @@ class Trainer:
         self.train_set = dataset(
             config,
             train_set_path,
-            transform=True
+            transform_flag=True
         )
 
         self.train_loader = torch.utils.data.DataLoader(
@@ -52,7 +55,7 @@ class Trainer:
             self.val_set = dataset(
                 config,
                 val_set_path,
-                transform=False
+                transform_flag=False
             )
             self.val_loader = torch.utils.data.DataLoader(
                 dataset=self.val_set,
@@ -84,7 +87,7 @@ class Trainer:
 
         self.log_dir = config['log_dir']
         if not os.path.exists(self.log_dir):
-            os.mkdir(self.log_dir)
+            os.makedirs(self.log_dir)
         if not os.path.exists(os.path.join(self.log_dir, 'weights')):
             os.mkdir(os.path.join(self.log_dir, 'weights'))
 
@@ -100,7 +103,7 @@ class Trainer:
         self.test_set = dataset(
             config,
             test_set_path,
-            transform=False
+            transform_flag=False
         )
         self.test_loader = torch.utils.data.DataLoader(
             dataset=self.test_set,
@@ -116,10 +119,10 @@ class Trainer:
         tic = None
         log = dict()
 
-        self.model = self.model.cuda()
-        self.criterion = self.criterion.cuda()
+        # self.model = self.model.cuda()
+        # self.criterion = self.criterion.cuda()
 
-        torch.backends.cudnn.benchmark = True
+        # torch.backends.cudnn.benchmark = True
 
         for epoch in range(self.n_epochs):
             log[epoch] = dict()
@@ -190,12 +193,13 @@ class Trainer:
         for inputs, masks in self.train_loader:
             cur_batch_size, *_ = inputs.size()
 
-            inputs = inputs.cuda()
-            masks = masks.cuda()
+            # inputs = inputs.cuda()
+            # masks = masks.cuda()
 
             self.optimizer.zero_grad()
             pred_masks = self.model.forward(inputs)
 
+            print(type(masks), type(pred_masks))
             score = cur_batch_size * get_dice(masks, pred_masks)
 
             running_score += score
@@ -228,7 +232,7 @@ class Trainer:
                 map_location='cpu'
             )
         )
-        self.model = self.model.cuda()
+        # self.model = self.model.cuda()
 
         test_score = self.evaluate(
             self.test_set,
@@ -253,7 +257,7 @@ class Trainer:
             for inputs, masks in loader:
                 cur_batch_size, *_ = inputs.size()
 
-                inputs = inputs.cuda()
+                # inputs = inputs.cuda()
 
                 masks_pred = self.model.forward(inputs)
                 for mask_pred in masks_pred:
